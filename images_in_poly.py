@@ -173,7 +173,7 @@ def main():
         if args.destination:
             # copy images to a new directory named with the city name
             new_path = copy_to_destination(
-                image[0], args.source, os.path.join(args.destination, str(area))
+                image[0], args.source, os.path.join(args.destination, str(area or "no_area"))
             )
             image_count += 1
             if args.write_tag and area is not None:
