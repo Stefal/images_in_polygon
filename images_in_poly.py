@@ -127,6 +127,13 @@ def arg_parse():
         required=True,
     )
     parser.add_argument(
+        "-a",
+        "--copy_orphan",
+        help="Copy images located outside of any polygon to the destination/no_area directory",
+        action="store_true",
+        default=False
+    )
+    parser.add_argument(
         "-d",
         "--destination",
         help="Path to the destination folder in which the images will be copied",
@@ -165,6 +172,10 @@ def main():
     used_area = {}
     for image in images_list:
         area = find_polygon(image[2], area_dict, previous_area)
+        if not area and not args.copy_orphan:
+            #image outside of polygons and copy orphan is False
+            continue
+            
         used_area[area] = used_area.get(area, 0) + 1
         if area is not None:
             previous_area = area
@@ -186,5 +197,5 @@ def main():
 if __name__ == "__main__":
     # Parsing the command line arguments
     args = arg_parse()
-    # print(args.json_file)
+    print(args)
     main()
