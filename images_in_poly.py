@@ -189,7 +189,6 @@ def main():
         if not area and not args.copy_orphan:
             #image outside of polygons and copy orphan is False
             continue
-            
         used_area[area] = used_area.get(area, 0) + 1
         if area is not None:
             previous_area = area
