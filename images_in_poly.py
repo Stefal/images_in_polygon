@@ -89,9 +89,9 @@ def write_exif(image_path, value):
     metadata.add_gpsareainformation(str(value))
     metadata.write()
 
-def copy_to_destination(image_path, source_directory, destination_directory):
+def file_to_destination(image_path, source_directory, destination_directory, move=False):
     """
-    Copy image to the destination directory, keeping the subfolder path
+    Copy/move image to the destination directory, keeping the subfolder path
     """
     relative_path = os.path.relpath(image_path, source_directory)
     full_destination_path = os.path.join(destination_directory, relative_path)
@@ -99,7 +99,14 @@ def copy_to_destination(image_path, source_directory, destination_directory):
         os.path.join(destination_directory, os.path.dirname(relative_path)),
         exist_ok=True,
     )
-    shutil.copy2(image_path, full_destination_path)
+    if os.path.abspath(image_path) == os.path.abspath(full_destination_path):
+        # source and destination are identical
+        pass
+    elif move == True:
+        shutil.move(image_path, full_destination_path)
+    elif move == False:
+        shutil.copy2(image_path, full_destination_path)
+
     return full_destination_path
 
 
@@ -139,10 +146,17 @@ def arg_parse():
         help="Path to the destination folder in which the images will be copied",
     )
     parser.add_argument(
+        "-m",
+        "--move",
+        help="Move files to destination instead of copy files",
+        action="store_true",
+    )
+    parser.add_argument(
         "-w",
         "--write_tag",
         help="write area name inside image exif metadata (GpsAreaInformation)",
         action="store_true",
+        default=False
     )
     parser.add_argument(
         "-q",
@@ -150,7 +164,7 @@ def arg_parse():
         help="Don't display images results",
         action="store_true",
     )
-    parser.add_argument("-v", "--version", action="version", version="release 1.1")
+    parser.add_argument("-v", "--version", action="version", version="release 1.2")
 
     args = parser.parse_args()
     return args
@@ -182,15 +196,14 @@ def main():
         if not args.quiet:
             print("{} -> {}".format(image[0], area))
         if args.destination:
-            # copy images to a new directory named with the city name
-            new_path = copy_to_destination(
-                image[0], args.source, os.path.join(args.destination, str(area or "no_area"))
-            )
+            # copy/move images to a new directory named with the city name
+            new_path = file_to_destination(
+                image[0], args.source, os.path.join(args.destination, str(area or "no_area")), args.move)
             image_count += 1
             if args.write_tag and area is not None:
                 write_exif(new_path, area)
             
-    print("{} images copied to {} directory : {}".format(image_count, len(used_area), used_area))
+    print("{} images {} to {} directory : {}".format(image_count, "copied" if args.move == False else "moved", len(used_area), used_area))
     print("End of Script")
 
 
