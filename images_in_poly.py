@@ -193,16 +193,21 @@ def main():
         used_area[area] = used_area.get(area, 0) + 1
         if area is not None:
             previous_area = area
-        if not args.quiet:
-            print("{} -> {}".format(image[0], area))
         if args.destination:
             # copy/move images to a new directory named with the city name
+            if area is not None:
+                dest_folder_name = os.path.join("..", area, "intérieur")
+            else:
+                dest_folder_name = os.path.join(args.destination, "extérieur")
             new_path = file_to_destination(
-                image[0], args.source, os.path.join(args.destination, str(area or "no_area")), args.move)
+                image[0], args.source, os.path.join(args.destination, dest_folder_name), args.move)
             image_count += 1
             if args.write_tag and area is not None:
                 write_exif(new_path, area)
-            
+        if not args.quiet:
+            #print("{} -> {}".format(image[0], area))
+            print("{} -> {}".format(image[0], new_path))
+
     print("{} images {} to {} directory : {}".format(image_count, "copied" if args.move == False else "moved", len(used_area), used_area))
     print("End of Script")
 
